@@ -19,4 +19,7 @@ RoxygenNote: 7.3.2
 Imports: 
     readr,
     readxl,
-    tools
+    tools,
+    dplyr,
+    rlang,
+    shiny

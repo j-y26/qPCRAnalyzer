@@ -198,11 +198,6 @@ exclude_invalid_wells <- function(data, exclude_wells) {
 #' @import dplyr
 #' 
 calculate_mean_cq <- function(data) {
-  # Check if any na values are present
-  if (any(is.na(data$Cq))) {
-    stop("NA values are present in the data. Data may not have run exclusion functions.")
-  }
-
   # Calculate the mean Cq value for each sample-target pair
   data <- data %>%
     filter(!Excluded) %>%
@@ -269,6 +264,7 @@ calculate_relative_expression <- function(data, refs) {
       rename(!!paste0("Mean_Cq_", ref) := Mean_Cq)
 
     result <- mean_cq %>%
+      filter(Target != ref) %>%
       left_join(ref_mean_cq, by = "Sample") %>%
       mutate(delta_Cq = Mean_Cq - !!sym(paste0("Mean_Cq_", ref))) %>%
       mutate(Relative_Expr = 2 ^ -delta_Cq) %>%
