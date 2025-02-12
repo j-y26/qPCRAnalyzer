@@ -10,7 +10,7 @@ import_and_validate(data)
 \item{data}{Data to validate, a data frame or a path to a data file. The file
 must be a standard file for qPCR data. Each row must be a well.
 Columns should include the minimum required columns for qPCR data,
-including: Well, Target, Sample, Cq.}
+including: Well, Target, Sample, Cq, and Group.}
 }
 \value{
 A data frame with the required columns for qPCR data. The column names
