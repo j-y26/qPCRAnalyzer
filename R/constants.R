@@ -22,4 +22,11 @@ CQ <- c("Cq", "cq", "CQ",
         "CqValue", "cqValue", "CQVALUE",
         "Ct", "ct", "CT",
         "CtValue", "ctValue", "CTVALUE")
-        
+
+# Group
+GROUP <- c("Group", "group", "GROUP",
+           "GroupID", "groupID", "GROUPID",
+           "GroupName", "groupName", "GROUPNAME",
+           "Condition", "condition", "CONDITION",
+           "Treatment", "treatment", "TREATMENT",
+           "Biological Set Name")
