@@ -1,0 +1,22 @@
+Package: qPCRAnalyzer
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: persion("Jielin", "Yang",
+                email = "jielin.yang@sickkids.ca",
+                role = c("aut", "cre"),
+                comment = c(ORCID = "0000-0003-4207-828X"))
+Maintainer: Jielin Yang <jielin.yang@sickkids.ca>
+Description: This package facilitates quick qPCR analysis
+License: MIT + file LICENSE
+File: LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/j-y26/qPCRAnalyzer
+BugReports: https://github.com/j-y26/qPCRAnalyzer/issues
+biocViews: BiomedicalInformatics
+RoxygenNote: 7.3.2
+Imports: 
+    readr,
+    readxl,
+    tools
