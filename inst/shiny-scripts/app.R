@@ -88,6 +88,15 @@ ui <- fluidPage(
           br(),
           helpText(tags$b("Confirm the wells to exclude before running the analysis.")),        
         ),
+
+        # === Part 3: Data Analysis ===
+        tabPanel(tags$b("Analysis Results"),
+          h3("Analysis Results"),
+          helpText("Select the reference gene to view the relative expression analysis results."),
+          uiOutput("select_ref_gene"),
+          br(),
+          uiOutput("expr_plots"),
+        )
       ),
     ),
   ),
@@ -95,6 +104,12 @@ ui <- fluidPage(
 
 
 server <- function(input, output, session) {
+
+  # Disable main output tabs until the analysis is performed
+  hideTab(
+    inputId = "main_panel",
+    target = "Analysis Results"
+  )
 
   data_reactive <- reactiveVal(NULL)
 
@@ -318,6 +333,54 @@ server <- function(input, output, session) {
       openxlsx::write.xlsx(result_lst(), file)
     }
   )
+
+  # Once the analysis is performed, display the tab to view the results
+  observeEvent(result_lst(), {
+    showTab(
+      inputId = "main_panel",
+      target = "Analysis Results"
+    )
+  })
+
+  # Display the select input for reference gene
+  output$select_ref_gene <- renderUI({
+    req(result_lst())
+
+    tagList(
+      selectInput("ref_gene_select", 
+                  label = "Select reference gene to view the results:", 
+                  choices = names(result_lst())[-1],
+                  selected = names(result_lst())[2])
+    )
+  })
+
+  # According to the selected reference gene, display the plots
+  output$expr_plots <- renderUI({
+    req(result_lst())
+
+    # Get the selected reference gene
+    ref_gene <- input$ref_gene_select
+
+    # Get the results for the selected reference gene
+    results <- result_lst()[[ref_gene]]
+
+    # Create a list of plots
+    plots_list <- plot_expr(result_lst())[ref_gene]
+
+    # Draw the list of ggplots, with 3 plots per row
+    n_plots <- length(plots_list)
+    n_rows <- ceiling(n_plots / 3)
+    plot_output_list <- lapply(1:n_rows, function(i) {
+      plot_output <- lapply(1:3, function(j) {
+        plot_index <- (i - 1) * 3 + j
+        if (plot_index <= n_plots) {
+          plot_output <- plotOutput(paste0("plot_", plot_index), height = 300, width = 300)
+          plot_output
+        }
+      })
+      tagList(plot_output)
+    })
+  })
 }
 
 

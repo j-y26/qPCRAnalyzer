@@ -22,4 +22,5 @@ Imports:
     tools,
     dplyr,
     rlang,
-    shiny
+    shiny,
+    openxlsx
