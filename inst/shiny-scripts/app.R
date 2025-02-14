@@ -52,6 +52,7 @@ ui <- fluidPage(
     # Main panel for displaying outputs
     mainPanel(
       tabsetPanel(
+        id = "main_panel",
         tabPanel(tags$b("Data Summary and Validation"), 
           # Output: Data summary
           h3("Data summary"),
@@ -95,7 +96,7 @@ ui <- fluidPage(
           helpText("Select the reference gene to view the relative expression analysis results."),
           uiOutput("select_ref_gene"),
           br(),
-          plotOutput("expr_plots"),
+          uiOutput("expr_plots_ui"),
         )
       ),
     ),
@@ -106,10 +107,11 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   # Disable main output tabs until the analysis is performed
-  hideTab(
-    inputId = "main_panel",
-    target = "Analysis Results"
-  )
+  observe({
+    updateTabsetPanel(session, "main_panel", selected = "Data Summary and Validation")
+    hideTab("main_panel", "Analysis Results", session)
+  })
+
 
   data_reactive <- reactiveVal(NULL)
 
@@ -347,11 +349,9 @@ server <- function(input, output, session) {
 
   # Once the analysis is performed, display the tab to view the results
   observeEvent(result_lst(), {
-    showTab(
-      inputId = "main_panel",
-      target = "Analysis Results"
-    )
+    showTab(inputId = "main_panel", target = "Analysis Results", select = TRUE)
   })
+
 
   # Display the select input for reference gene
   output$select_ref_gene <- renderUI({
@@ -365,12 +365,19 @@ server <- function(input, output, session) {
     )
   })
 
+  # Plot dimensions
+  plot_dimensions <- reactiveValues(height = "600px")
+
   # According to the selected reference gene, display the plots
   output$expr_plots <- renderPlot({
     req(result_lst())
 
     # Get the selected reference gene
     ref_gene <- input$ref_gene_select
+    
+    # Ensure that the reference gene exists before proceeding
+    result_names <- names(plot_expr(result_lst()))
+    req(ref_gene %in% result_names)
 
     # Get the results for the selected reference gene
     results <- result_lst()[ref_gene]
@@ -378,9 +385,8 @@ server <- function(input, output, session) {
     # Create a list of plots
     plots_list <- plot_expr(result_lst())[[ref_gene]]
 
-    if (is.null(plots_list) || length(plots_list) == 0) {
-        return(NULL)  # Return nothing if there are no plots
-    }
+    # Ensure it's a valid list of ggplots
+    req(is.list(plots_list) && length(plots_list) > 0)
 
     # Determine the number of columns for the plots
     n_plots <- length(plots_list)
@@ -396,8 +402,26 @@ server <- function(input, output, session) {
     # Make a combined plot
     combined_plot <- cowplot::plot_grid(plotlist = plots_list, ncol = n_cols)
 
+    # Calculate the number of rows of the plot
+    plot_nrow <- ceiling(n_plots / n_cols)
+    plot_dimensions$height <- paste0(plot_nrow * 350, "px")
+
     return(combined_plot)
   })
+
+  output$expr_plots_ui <- renderUI({
+    if (is.null(result_lst())) {
+        return(
+          tagList(
+            tags$p("Waiting for analysis...", style = "font-size: 18px; color: gray;"),
+            tags$p("Please select input data, exclude invalid wells, and run the analysis.",
+                    style = "font-size: 16px; color: gray;")
+          )
+        )
+    }
+    plotOutput("expr_plots", height = plot_dimensions$height)
+  })
+
 
 
 

@@ -23,4 +23,7 @@ Imports:
     dplyr,
     rlang,
     shiny,
-    openxlsx
+    shinyBS,
+    openxlsx,
+    ggplot2,
+    cowplot

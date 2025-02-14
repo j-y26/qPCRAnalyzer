@@ -39,10 +39,14 @@ plot_expr <- function(results) {
 
       # Create the plot
       p <- ggplot(data, aes(x = !!sym(group_by), y = Relative_Expr, fill = !!sym(group_by))) +
-        geom_bar(stat = "identity", position = "dodge") +
-        labs(title = target, x = group_by, y = paste0(target, "/", ref)) +
-        theme_minimal() +
-        theme(legend.position = "top")
+        geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+        labs(title = target, y = paste0(target, "/", ref)) +
+        theme_minimal(base_size = 14) +
+        theme(
+          legend.position = "none",
+          axis.title.x = element_blank(),
+          plot.title = element_text(hjust = 0.5)
+        )
 
       # Save the plot
       ref_plots[[target]] <- p
