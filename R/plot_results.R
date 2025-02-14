@@ -37,9 +37,13 @@ plot_expr <- function(results) {
         filter(Target == target)
       data[[group_by]] <- factor(data[[group_by]], levels = unique(data[[group_by]]))
 
-      # Create the plot
-      p <- ggplot(data, aes(x = !!sym(group_by), y = Relative_Expr, fill = !!sym(group_by))) +
+      data_summary <- data %>%
+        group_by(!!sym(group_by)) %>%
+        summarise(Mean = mean(Relative_Expr), SD = sd(Relative_Expr), .groups = "drop")
+
+      p <- ggplot(data_summary, aes(x = !!sym(group_by), y = Mean, fill = !!sym(group_by))) +
         geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+        geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, color = "black") +
         labs(title = target, y = paste0(target, "/", ref)) +
         theme_minimal(base_size = 14) +
         theme(
@@ -47,6 +51,13 @@ plot_expr <- function(results) {
           axis.title.x = element_blank(),
           plot.title = element_text(hjust = 0.5)
         )
+
+      # Add dots and error bars if grouping by Group
+      if (group_by == "Group") {
+        p <- p + 
+          geom_point(data = data, aes(x = !!sym(group_by), y = Relative_Expr), 
+                       position = position_jitter(width = 0.2), size = 2, color = "black")
+      }
 
       # Save the plot
       ref_plots[[target]] <- p

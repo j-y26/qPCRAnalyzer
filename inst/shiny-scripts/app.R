@@ -2,6 +2,7 @@ library(shiny)
 library(shinyBS) # for interactive elements
 library(dplyr)
 library(qPCRAnalyzer)
+library(shinycssloaders)
 
 # Constants to define
 DT_OPTIONS <- list(
@@ -46,6 +47,19 @@ ui <- fluidPage(
 
       # Download button
       uiOutput("download_ui"),
+
+      # Add a footer to the app
+      br(),
+      br(),
+      tags$footer("© Copyright 2025. Developed and maintained by Jielin
+                  Yang."),
+      tags$footer(
+        "To view the source code or report issues, visit the ",
+        tags$a(
+          href = "https://github.com/j-y26/qPCRAnalyzer",
+          "package Github page"
+        ), "."
+      ),
     ),
 
 
@@ -96,7 +110,7 @@ ui <- fluidPage(
           helpText("Select the reference gene to view the relative expression analysis results."),
           uiOutput("select_ref_gene"),
           br(),
-          uiOutput("expr_plots_ui"),
+          uiOutput("expr_plots_ui") %>% withSpinner(color = "#3498db"),
         )
       ),
     ),

@@ -272,8 +272,16 @@ calculate_relative_expression <- function(data, refs) {
       left_join(ref_mean_cq, by = "Sample") %>%
       mutate(delta_Cq = Mean_Cq - !!sym(paste0("Mean_Cq_", ref))) %>%
       mutate(Relative_Expr = 2 ^ -delta_Cq) %>%
-      mutate(Reference = ref) %>%
-      select(Target, Group, Sample, Mean_Cq, Reference, !!sym(paste0("Mean_Cq_", ref)), delta_Cq, Relative_Expr)
+      mutate(Reference = ref)
+
+    # Extract relavent columns depending on the number of groups
+    if ("Group" %in% colnames(mean_cq)) {
+      result <- result %>%
+        select(Target, Group, Sample, Mean_Cq, Reference, !!sym(paste0("Mean_Cq_", ref)), delta_Cq, Relative_Expr)
+    } else {
+      result <- result %>%
+        select(Target, Sample, Mean_Cq, Reference, !!sym(paste0("Mean_Cq_", ref)), delta_Cq, Relative_Expr)
+    }
 
     expr_results[[ref]] <- result
   }
