@@ -256,6 +256,10 @@ calculate_relative_expression <- function(data, refs) {
     stop("One or more reference genes are missing from the data.")
   }
 
+  if (length(refs) == 0) {
+    stop("At least one reference gene must be provided.")
+  }
+
   # Calculate the relative expression of each sample compared to the reference sample
   for (ref in refs) {
     ref_mean_cq <- mean_cq %>%

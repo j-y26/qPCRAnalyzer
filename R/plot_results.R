@@ -40,7 +40,7 @@ plot_expr <- function(results) {
       # Create the plot
       p <- ggplot(data, aes(x = !!sym(group_by), y = Relative_Expr, fill = !!sym(group_by))) +
         geom_bar(stat = "identity", position = "dodge") +
-        labs(title = NULL, x = group_by, y = paste0(target, "/", ref)) +
+        labs(title = target, x = group_by, y = paste0(target, "/", ref)) +
         theme_minimal() +
         theme(legend.position = "top")
 

@@ -95,7 +95,7 @@ ui <- fluidPage(
           helpText("Select the reference gene to view the relative expression analysis results."),
           uiOutput("select_ref_gene"),
           br(),
-          uiOutput("expr_plots"),
+          plotOutput("expr_plots"),
         )
       ),
     ),
@@ -305,6 +305,17 @@ server <- function(input, output, session) {
   observeEvent(input$run_analysis, {
     req(data_reactive())
 
+    # Do not proceed if no reference gene is selected
+    # Provide a warning message if no reference gene is selected
+    if (length(input$ref_gene) == 0) {
+      showModal(modalDialog(
+        title = "Warning",
+        "Please select at least one reference gene for analysis.",
+        easyClose = TRUE
+      ))
+      return(NULL)
+    }
+
     # Perform the analysis
     analysis_result <- data_reactive() %>%
       exclude_invalid_wells(selected_wells()) %>%
@@ -355,32 +366,46 @@ server <- function(input, output, session) {
   })
 
   # According to the selected reference gene, display the plots
-  output$expr_plots <- renderUI({
+  output$expr_plots <- renderPlot({
     req(result_lst())
 
     # Get the selected reference gene
     ref_gene <- input$ref_gene_select
 
     # Get the results for the selected reference gene
-    results <- result_lst()[[ref_gene]]
+    results <- result_lst()[ref_gene]
 
     # Create a list of plots
-    plots_list <- plot_expr(result_lst())[ref_gene]
+    plots_list <- plot_expr(result_lst())[[ref_gene]]
 
-    # Draw the list of ggplots, with 3 plots per row
+    if (is.null(plots_list) || length(plots_list) == 0) {
+        return(NULL)  # Return nothing if there are no plots
+    }
+
+    # Determine the number of columns for the plots
     n_plots <- length(plots_list)
-    n_rows <- ceiling(n_plots / 3)
-    plot_output_list <- lapply(1:n_rows, function(i) {
-      plot_output <- lapply(1:3, function(j) {
-        plot_index <- (i - 1) * 3 + j
-        if (plot_index <= n_plots) {
-          plot_output <- plotOutput(paste0("plot_", plot_index), height = 300, width = 300)
-          plot_output
-        }
-      })
-      tagList(plot_output)
-    })
+    group_by <- ifelse(length(unique(data_reactive()$Group)) > 1, "Group", "Sample")
+    if (n_plots == 1) {
+      n_cols <- 1
+    } else if (n_plots == 2 | group_by == "Sample") {
+      n_cols <- 2
+    } else {
+      n_cols <- 3
+    }
+
+    # Make a combined plot
+    combined_plot <- cowplot::plot_grid(plotlist = plots_list, ncol = n_cols)
+
+    return(combined_plot)
   })
+
+
+
+
+
+
+
+
 }
 
 
